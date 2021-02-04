@@ -8,19 +8,24 @@ find_package(catkin REQUIRED COMPONENTS cmake_modules eigen_conversions message_
 
 # PCL
 find_package(PCL 1.9 REQUIRED)
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
 ## System dependencies are found with CMake's conventions
-find_library(GPD_LIB NAMES gpd PATHS /usr/local/lib PATH_SUFFIXES lib NO_DEFAULT_PATH)
+#find_library(GPD_LIB NAMES gpd PATHS /usr/local/lib PATH_SUFFIXES lib NO_DEFAULT_PATH)
+find_library(GPD_LIB NAMES gpd PATHS
+    /home/fabian/Documents/work/github/gpd/build/ PATH_SUFFIXES lib NO_DEFAULT_PATH)
 if (GPD_LIB)
   message(STATUS "Library GPD found in ${GPD_LIB}")
 else()
   message(FATAL_ERROR "Library GPD not found")
 endif()
-include_directories(${GPD_LIB_INCLUDE_DIR})
-message(STATUS "gpd_include_dir: ${GPD_LIB_INCLUDE_DIR}")
+include_directories("/home/fabian/Documents/work/github/gpd/include/")
+#include_directories(${GPD_LIB_INCLUDE_DIR})
+#message(STATUS "gpd_include_dir: ${GPD_LIB_INCLUDE_DIR}")
 
 set(CMAKE_CXX_FLAGS "-O3 -fopenmp -fPIC -Wno-deprecated -Wenum-compare -Wno-ignored-attributes -std=c++14")
 
@@ -46,7 +51,7 @@ generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
 catkin_package(
 INCLUDE_DIRS include
 CATKIN_DEPENDS cmake_modules eigen_conversions geometry_msgs message_runtime roscpp sensor_msgs std_msgs
-DEPENDS PCL
+DEPENDS PCL Eigen OpenCV
 # CATKIN_DEPENDS cmake_modules eigen_conversions geometry_msgs message_runtime roscpp sensor_msgs std_msgs
 # DEPENDS Eigen OpenCV PCL
 )
@@ -61,8 +66,9 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
 
 ## Declare a C++ library
 add_library(${PROJECT_NAME}_grasp_messages src/${PROJECT_NAME}/grasp_messages.cpp)
-add_dependencies(${PROJECT_NAME}_grasp_messages ${catkin_EXPORTED_TARGETS})
+#add_dependencies(${PROJECT_NAME}_grasp_messages ${catkin_EXPORTED_TARGETS})
 add_library(${PROJECT_NAME}_grasp_plotter src/${PROJECT_NAME}/grasp_plotter.cpp)
+add_dependencies(${PROJECT_NAME}_grasp_messages ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 add_executable(${PROJECT_NAME}_detect_grasps src/gpd_ros/grasp_detection_node.cpp)
